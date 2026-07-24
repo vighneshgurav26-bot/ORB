@@ -1,8 +1,8 @@
 # Options Desk — Trading Journal
 
-**Strategy v1 — V1_Liquid_RVoverIV_NextWeekly**
+**Strategy v1 — ORB_BodyBreak_StockInPlay**
 
-Calibrated on live NIFTY books, 24-Jul-2026. Three measurements drove it. (1) The front expiry with 2 sessions left bled 18.2% of premium per session versus 5.9% on the next weekly, so this avoids any expiry with under 3 sessions left. (2) Round-trip friction on liquid near-ATM index calls ran 0.96-1.29%, but jumped past 2% on sub-Rs60 premiums, so the premium floor does more work than any OI filter. (3) Five-day realised vol was 6.9% against 11.4% implied - RV/IV 0.60 - which is precisely the regime where a directional buyer is right on direction and still loses. So the binding condition is realised-versus-implied, not the signal.
+Opening Range Breakout, implemented from the user's document. Marks the 09:15-09:30 15-minute range, waits for a 5-minute candle BODY (not a wick) to close beyond it, buys near-ATM CE on an up-break or PE on a down-break, targets 1:2, caps at 2 trades per day, and trails on the 5m 9-EMA. The doc's 'Stock in Play' relative-volume filter (rel_volume > 1.5) is the primary edge. The desk's liquidity and theta gates ride on top: the doc's own Section 4 demands price/volume/ATR screening and its Key Terms name theta decay as the risk quick exits exist to dodge, so a low realised-vs-implied day is still skipped rather than bought.
 
 ## Performance
 
@@ -13,7 +13,7 @@ Calibrated on live NIFTY books, 24-Jul-2026. Three measurements drove it. (1) Th
 
 | v | name | status | created |
 |---|---|---|---|
-| 1 | V1_Liquid_RVoverIV_NextWeekly | ACTIVE | 2026-07-24T23:33:27+05:30 |
+| 1 | ORB_BodyBreak_StockInPlay | ACTIVE | 2026-07-25T05:19:24+05:30 |
 
 ## Reviews
 

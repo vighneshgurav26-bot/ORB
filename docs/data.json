@@ -11,11 +11,11 @@
  "curve": [],
  "strategy": {
   "version": 1,
-  "name": "V1_Liquid_RVoverIV_NextWeekly",
-  "rationale": "Calibrated on live NIFTY books, 24-Jul-2026. Three measurements drove it. (1) The front expiry with 2 sessions left bled 18.2% of premium per session versus 5.9% on the next weekly, so this avoids any expiry with under 3 sessions left. (2) Round-trip friction on liquid near-ATM index calls ran 0.96-1.29%, but jumped past 2% on sub-Rs60 premiums, so the premium floor does more work than any OI filter. (3) Five-day realised vol was 6.9% against 11.4% implied - RV/IV 0.60 - which is precisely the regime where a directional buyer is right on direction and still loses. So the binding condition is realised-versus-implied, not the signal.",
+  "name": "ORB_BodyBreak_StockInPlay",
+  "rationale": "Opening Range Breakout, implemented from the user's document. Marks the 09:15-09:30 15-minute range, waits for a 5-minute candle BODY (not a wick) to close beyond it, buys near-ATM CE on an up-break or PE on a down-break, targets 1:2, caps at 2 trades per day, and trails on the 5m 9-EMA. The doc's 'Stock in Play' relative-volume filter (rel_volume > 1.5) is the primary edge. The desk's liquidity and theta gates ride on top: the doc's own Section 4 demands price/volume/ATR screening and its Key Terms name theta decay as the risk quick exits exist to dodge, so a low realised-vs-implied day is still skipped rather than bought.",
   "spec": {
-   "name": "V1_Liquid_RVoverIV_NextWeekly",
-   "rationale": "Calibrated on live NIFTY books, 24-Jul-2026. Three measurements drove it. (1) The front expiry with 2 sessions left bled 18.2% of premium per session versus 5.9% on the next weekly, so this avoids any expiry with under 3 sessions left. (2) Round-trip friction on liquid near-ATM index calls ran 0.96-1.29%, but jumped past 2% on sub-Rs60 premiums, so the premium floor does more work than any OI filter. (3) Five-day realised vol was 6.9% against 11.4% implied - RV/IV 0.60 - which is precisely the regime where a directional buyer is right on direction and still loses. So the binding condition is realised-versus-implied, not the signal.",
+   "name": "ORB_BodyBreak_StockInPlay",
+   "rationale": "Opening Range Breakout, implemented from the user's document. Marks the 09:15-09:30 15-minute range, waits for a 5-minute candle BODY (not a wick) to close beyond it, buys near-ATM CE on an up-break or PE on a down-break, targets 1:2, caps at 2 trades per day, and trails on the 5m 9-EMA. The doc's 'Stock in Play' relative-volume filter (rel_volume > 1.5) is the primary edge. The desk's liquidity and theta gates ride on top: the doc's own Section 4 demands price/volume/ATR screening and its Key Terms name theta decay as the risk quick exits exist to dodge, so a low realised-vs-implied day is still skipped rather than bought.",
    "universe": [
     "NIFTY",
     "BANKNIFTY",
@@ -23,57 +23,57 @@
     "ICICIBANK"
    ],
    "session": {
-    "start": "09:35",
-    "no_new_after": "14:15",
-    "force_exit": "15:15"
+    "start": "09:30",
+    "no_new_after": "13:30",
+    "force_exit": "15:10"
    },
    "selection": {
     "expiry": "skip_expiry_day",
     "min_sessions_left": 3.0,
     "delta_band": [
-     0.35,
-     0.6
+     0.4,
+     0.62
     ],
     "max_spread_pct": 0.7,
     "min_oi": 150000,
-    "max_premium_per_lot": 60000
+    "max_premium_per_lot": 22000
    },
    "entry_long_call": {
     "all": [
      {
-      "feature": "trend_score",
+      "feature": "orb_body_break",
       "op": ">",
-      "value": 0.45
+      "value": 0.5
      },
      {
-      "feature": "vwap_dev_pct",
-      "op": ">",
-      "value": 0.08
+      "feature": "minutes_into_session",
+      "op": ">=",
+      "value": 15
      },
      {
-      "feature": "adx_proxy",
+      "feature": "orb_range_pct",
       "op": ">",
-      "value": 25
+      "value": 0.12
      },
      {
-      "feature": "minutes_to_close",
+      "feature": "rel_volume",
       "op": ">",
-      "value": 75
-     },
-     {
-      "feature": "rv_iv_ratio",
-      "op": ">",
-      "value": 0.85
-     },
-     {
-      "feature": "realised_edge_ratio",
-      "op": ">",
-      "value": 1.3
+      "value": 1.5
      },
      {
       "feature": "atr_pct",
       "op": ">",
       "value": 0.03
+     },
+     {
+      "feature": "ema9_side",
+      "op": ">",
+      "value": 0.0
+     },
+     {
+      "feature": "rv_iv_ratio",
+      "op": ">",
+      "value": 0.8
      },
      {
       "feature": "atm_total_friction_pct",
@@ -86,33 +86,82 @@
       "value": 6
      },
      {
-      "feature": "atm_top_of_book_lots",
+      "feature": "minutes_to_close",
       "op": ">",
-      "value": 2.0
-     }
-    ],
-    "any": [
-     {
-      "feature": "opening_range_break",
-      "op": ">",
-      "value": 0.5
-     },
-     {
-      "feature": "ema_fast_slow_pct",
-      "op": ">",
-      "value": 0.12
+      "value": 90
      }
     ],
     "none": [
      {
-      "feature": "iv_vs_20d",
+      "feature": "atm_one_tick_pct",
       "op": ">",
-      "value": 1.35
+      "value": 0.12
      },
+     {
+      "feature": "sessions_left",
+      "op": "<",
+      "value": 3.0
+     }
+    ]
+   },
+   "entry_long_put": {
+    "all": [
+     {
+      "feature": "orb_body_break",
+      "op": "<",
+      "value": -0.5
+     },
+     {
+      "feature": "minutes_into_session",
+      "op": ">=",
+      "value": 15
+     },
+     {
+      "feature": "orb_range_pct",
+      "op": ">",
+      "value": 0.12
+     },
+     {
+      "feature": "rel_volume",
+      "op": ">",
+      "value": 1.5
+     },
+     {
+      "feature": "atr_pct",
+      "op": ">",
+      "value": 0.03
+     },
+     {
+      "feature": "ema9_side",
+      "op": "<",
+      "value": 0.0
+     },
+     {
+      "feature": "rv_iv_ratio",
+      "op": ">",
+      "value": 0.8
+     },
+     {
+      "feature": "atm_total_friction_pct",
+      "op": "<",
+      "value": 1.45
+     },
+     {
+      "feature": "liquid_contracts",
+      "op": ">=",
+      "value": 6
+     },
+     {
+      "feature": "minutes_to_close",
+      "op": ">",
+      "value": 90
+     }
+    ],
+    "none": [
      {
       "feature": "atm_one_tick_pct",
       "op": ">",
-      "value": 0.1
+      "value": 0.12
      },
      {
       "feature": "sessions_left",
@@ -122,160 +171,68 @@
     ]
    },
    "exit": {
-    "target_pct": 26.0,
-    "stop_pct": 14.0,
-    "trail_after_pct": 15.0,
-    "trail_giveback_pct": 40.0,
-    "time_stop_min": 50,
-    "underlying_invalidation": {
-     "feature": "vwap_dev_pct",
-     "flip": true
-    },
+    "target_pct": 30.0,
+    "stop_pct": 15.0,
+    "ema9_trail": true,
+    "trail_after_pct": 20.0,
+    "trail_giveback_pct": 45.0,
+    "time_stop_min": 60,
     "iv_crush_exit_pct": 8.0
    },
    "sizing": {
     "risk_per_trade_pct": 1.5,
-    "max_lots": 4,
-    "max_premium_pct": 20.0
+    "max_lots": 2,
+    "max_premium_pct": 22.0
    },
    "risk": {
     "daily_loss_pct": 3.0,
-    "max_trades_day": 3,
-    "max_concurrent": 2,
-    "cooldown_min_after_loss": 30
-   },
-   "entry_long_put": {
-    "all": [
-     {
-      "feature": "trend_score",
-      "op": "<",
-      "value": -0.45
-     },
-     {
-      "feature": "vwap_dev_pct",
-      "op": "<",
-      "value": -0.08
-     },
-     {
-      "feature": "adx_proxy",
-      "op": ">",
-      "value": 25
-     },
-     {
-      "feature": "minutes_to_close",
-      "op": ">",
-      "value": 75
-     },
-     {
-      "feature": "rv_iv_ratio",
-      "op": ">",
-      "value": 0.85
-     },
-     {
-      "feature": "realised_edge_ratio",
-      "op": ">",
-      "value": 1.3
-     },
-     {
-      "feature": "atr_pct",
-      "op": ">",
-      "value": 0.03
-     },
-     {
-      "feature": "atm_total_friction_pct",
-      "op": "<",
-      "value": 1.45
-     },
-     {
-      "feature": "liquid_contracts",
-      "op": ">=",
-      "value": 6
-     },
-     {
-      "feature": "atm_top_of_book_lots",
-      "op": ">",
-      "value": 2.0
-     }
-    ],
-    "any": [
-     {
-      "feature": "opening_range_break",
-      "op": "<",
-      "value": -0.5
-     },
-     {
-      "feature": "ema_fast_slow_pct",
-      "op": "<",
-      "value": -0.12
-     }
-    ],
-    "none": [
-     {
-      "feature": "iv_vs_20d",
-      "op": ">",
-      "value": 1.35
-     },
-     {
-      "feature": "atm_one_tick_pct",
-      "op": ">",
-      "value": 0.1
-     },
-     {
-      "feature": "sessions_left",
-      "op": "<",
-      "value": 3.0
-     }
-    ]
+    "max_trades_day": 2,
+    "max_concurrent": 1,
+    "cooldown_min_after_loss": 20
    },
    "direction": "LONG_ONLY"
   },
   "backtest": {
-   "mode": "live_calibration",
-   "source": "kite 24-Jul-2026",
-   "nifty_spot": 23767.45,
-   "atm_iv_front": 0.114,
-   "realised_vol_5d": 0.069,
-   "rv_iv": 0.604,
-   "confidence": "n/a - calibrated, not backtested"
+   "mode": "seed"
   }
  },
  "history": [
   {
    "version": 1,
-   "name": "V1_Liquid_RVoverIV_NextWeekly",
-   "rationale": "Calibrated on live NIFTY books, 24-Jul-2026. Three measurements drove it. (1) The front expiry with 2 sessions left bled 18.2% of premium per session versus 5.9% on the next weekly, so this avoids any expiry with under 3 sessions left. (2) Round-trip friction on liquid near-ATM index calls ran 0.96-1.29%, but jumped past 2% on sub-Rs60 premiums, so the premium floor does more work than any OI filter. (3) Five-day realised vol was 6.9% against 11.4% implied - RV/IV 0.60 - which is precisely the regime where a directional buyer is right on direction and still loses. So the binding condition is realised-versus-implied, not the signal.",
+   "name": "ORB_BodyBreak_StockInPlay",
+   "rationale": "Opening Range Breakout, implemented from the user's document. Marks the 09:15-09:30 15-minute range, waits for a 5-minute candle BODY (not a wick) to close beyond it, buys near-ATM CE on an up-break or PE on a down-break, targets 1:2, caps at 2 trades per day, and trails on the 5m 9-EMA. The doc's 'Stock in Play' relative-volume filter (rel_volume > 1.5) is the primary edge. The desk's liquidity and theta gates ride on top: the doc's own Section 4 demands price/volume/ATR screening and its Key Terms name theta decay as the risk quick exits exist to dodge, so a low realised-vs-implied day is still skipped rather than bought.",
    "status": "ACTIVE",
-   "created_ts": "2026-07-24T23:33:27+05:30",
-   "backtest": "{\"mode\": \"live_calibration\", \"source\": \"kite 24-Jul-2026\", \"nifty_spot\": 23767.45, \"atm_iv_front\": 0.114, \"realised_vol_5d\": 0.069, \"rv_iv\": 0.604, \"confidence\": \"n/a - calibrated, not backtested\"}"
+   "created_ts": "2026-07-25T05:19:24+05:30",
+   "backtest": "{\"mode\": \"seed\"}"
   }
  ],
  "reviews": [],
  "journal": [
   {
    "id": 3,
-   "ts": "2026-07-25T05:10:45+05:30",
+   "ts": "2026-07-25T05:19:24+05:30",
    "kind": "IDLE",
    "symbol": "",
    "headline": "Market closed",
-   "detail": "Sat 25 Jul 05:10 IST",
+   "detail": "Sat 25 Jul 05:19 IST",
    "payload": "{}"
   },
   {
    "id": 2,
-   "ts": "2026-07-25T05:10:45+05:30",
-   "kind": "DATA",
+   "ts": "2026-07-25T05:19:24.157854+05:30",
+   "kind": "STRATEGY",
    "symbol": "",
-   "headline": "Lot sizes from nse_csv",
-   "detail": "211 symbols cached",
+   "headline": "Seeded strategy v1",
+   "detail": "ORB_BodyBreak_StockInPlay",
    "payload": "{}"
   },
   {
    "id": 1,
-   "ts": "2026-07-24T23:33:27+05:30",
-   "kind": "STRATEGY",
+   "ts": "2026-07-25T05:19:24+05:30",
+   "kind": "DATA",
    "symbol": "",
-   "headline": "Installed v1 calibrated on live Kite data",
-   "detail": "Calibrated on live NIFTY books, 24-Jul-2026. Three measurements drove it. (1) The front expiry with 2 sessions left bled 18.2% of premium per session versus 5.9% on the next weekly, so this avoids any expiry with under 3 sessions left. (2) Round-trip friction on liquid near-ATM index calls ran 0.96-1.29%, but jumped past 2% on sub-Rs60 premiums, so the premium floor does more work than any OI filt",
+   "headline": "Lot sizes from nse_csv",
+   "detail": "211 symbols cached",
    "payload": "{}"
   }
  ]
