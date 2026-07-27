@@ -17,6 +17,11 @@ Opening Range Breakout, implemented from the user's document. Marks the 09:15-09
 
 ## Reviews
 
+### 2026-07-27T18:21:46+05:30 — idle (v1 -> v1)
+The strategy has now gone through at least two review cycles with zero trades executed — the entry filter conjunction is so restrictive that it never fires on a 4-instrument universe. There is no P&L, MFE/MAE, exit-reason mix, theta-vs-move analysis, or charge analysis to evaluate because there is literally no data. The past review already diagnosed this and proposed loosening, but the change was rejected on the grounds of insufficient backtest trades — a circular trap: the live strategy cannot generate trades to justify looser filters, and the looser filters cannot be approved without trades. The only way to break the deadlock is to accept that a zero-trade strategy is strictly worse than a strategy that fires occasionally and can be corrected empirically. The universe of 4 instruments compounds the problem: even on a high-volatility day, the probability that all conjunction conditions align on exactly these 4 names is very low.
+
+*Changes:* proposal rejected: only 0 backtest trades (need 20); does not beat the incumbent's expectancy; expectancy is not positive
+
 ### 2026-07-27T16:27:07+05:30 — idle (v1 -> v1)
 The strategy has zero trades, so there is no P&L, MFE/MAE, exit-reason mix, or charge analysis to evaluate — every diagnostic bucket is empty. With no executions the strategy is untestable in live conditions and learns nothing. The note in the payload makes the diagnosis explicit: entry rules are too tight. The combined filter stack (orb_range_pct > 0.12, rel_volume > 1.5, atr_pct > 0.03, rv_iv_ratio > 0.8, ema9_side confirmation, atm_one_tick_pct guard, liquid_contracts >= 6, minutes_to_close > 90, plus the screener's own liquidity×volatility gate) creates a conjunction of seven-plus conditions, each of which eliminates a fraction of candidates, and their product fires almost never on a 4-stock universe. The universe itself — NIFTY, BANKNIFTY, RELIANCE, ICICIBANK — is sensible for liquidity but too narrow to give enough at-bats for the filters to find a pass. Sample size is zero; any directional conclusion about edge is impossible, so the only valid response is to loosen enough to generate 1–3 trades per week and begin collecting real data.
 

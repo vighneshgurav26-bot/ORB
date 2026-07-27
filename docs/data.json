@@ -208,6 +208,17 @@
  ],
  "reviews": [
   {
+   "id": 2,
+   "ts": "2026-07-27T18:21:46+05:30",
+   "trigger": "idle",
+   "from_version": 1,
+   "to_version": 1,
+   "stats": "{\"trades\": 0, \"note\": \"no trades generated\"}",
+   "lessons": "The strategy has now gone through at least two review cycles with zero trades executed \u2014 the entry filter conjunction is so restrictive that it never fires on a 4-instrument universe. There is no P&L, MFE/MAE, exit-reason mix, theta-vs-move analysis, or charge analysis to evaluate because there is literally no data. The past review already diagnosed this and proposed loosening, but the change was rejected on the grounds of insufficient backtest trades \u2014 a circular trap: the live strategy cannot generate trades to justify looser filters, and the looser filters cannot be approved without trades. The only way to break the deadlock is to accept that a zero-trade strategy is strictly worse than a strategy that fires occasionally and can be corrected empirically. The universe of 4 instruments compounds the problem: even on a high-volatility day, the probability that all conjunction conditions align on exactly these 4 names is very low.",
+   "changes": "proposal rejected: only 0 backtest trades (need 20); does not beat the incumbent's expectancy; expectancy is not positive",
+   "raw": "{\"review\": {\"lessons\": \"The strategy has now gone through at least two review cycles with zero trades executed \\u2014 the entry filter conjunction is so restrictive that it never fires on a 4-instrument universe. There is no P&L, MFE/MAE, exit-reason mix, theta-vs-move analysis, or charge analysis to evaluate because there is literally no data. The past review already diagnosed this and proposed loosening, but the change was rejected on the grounds of insufficient backtest trades \\u2014 a circular trap: the live strategy cannot generate trades to justify looser filters, and the looser filters cannot be approved without trades. The only way to break the deadlock is to accept that a zero-trade strategy is strictly worse than a strategy that fires occasionally and can be corrected empirically. The universe of 4 instruments compounds the problem: even on a high-volatility day, the probability that all conjunction conditions align on exactly these 4 names is very low.\", \"diagnosis\": \"The filter conjunction (7+ simultaneous conditions including rel_volume > 1.5, orb_range_pct > 0.12, rv_iv_ratio > 0.8, ema9_side confirmation, atr_pct > 0.03, liquid_contracts >= 6, minutes_to_close > 90) applied to only 4 instruments produces near-zero firing frequency \\u2014 the strategy is structurally unable to generate trades, making all other parameters irrelevant.\", \"action\": \"TWEAK\", \"changes\": \"1. UNIVERSE: Add HDFCBANK and SBIN to bring the universe to 6 instruments, giving more at-bats without sacrificing liquidity. 2. orb_range_pct threshold: lower from 0.12 to 0.08 \\u2014 a 0.12% ORB range is unusually wide; most days NIFTY/BANKNIFTY will not qualify. 3. rel_volume threshold: lower from 1.5 to 1.2 \\u2014 1.5\\u00d7 relative volume is a high bar on a normal session; 1.2\\u00d7 still confirms elevated activity without eliminating most days. 4. rv_iv_ratio threshold: lower from 0.8 to 0.7 \\u2014 0.8 means realised vol is nearly matching implied; 0.7 still ensures we are not buying pure IV premium on a dead tape. 5. minutes_to_close: lower from 90 to 75 \\u2014 this relaxes the time gate slightly without exposing late entries to severe theta. 6. atr_pct threshold: keep at 0.03, this is already a soft floor and should not be loosened further. 7. liquid_contracts: lower from 6 to 4 \\u2014 indices routinely pass 6 but single stocks often don't; 4 still ensures meaningful depth. 8. Keep all hard ceilings, risk sizing, stop/target ratios, and the body-break (not wick) rule unchanged \\u2014 the exit and risk logic is sound and untested, not wrong. The goal is to generate 1-3 trades per week of live data so subsequent reviews have something real to evaluate.\", \"confidence\": 0.62}, \"proposal\": {\"name\": \"ORB_BodyBreak_v3_Loosened\", \"rationale\": \"Opening Range Breakout on a body-close (not wick) beyond the 15-min OR, confirmed by relative volume and directional momentum. The edge is that a genuine volume-backed breakout of a meaningful range delivers intraday follow-through faster than theta decays. Costs are controlled by the atm_total_friction_pct gate and the rv_iv_ratio floor: we only buy when the tape is actually moving relative to what implied vol charges. This version loosens five thresholds identified in two consecutive zero-trade reviews (orb_range_pct 0.12\\u21920.08, rel_volume 1.5\\u21921.2, rv_iv_ratio 0.8\\u21920.70, liquid_contracts 6\\u21924, minutes_to_close 90\\u219275) and expands the universe from 4 to 6 instruments to generate enough at-bats for empirical evaluation. All risk sizing, stop/target ratios, and the body-break filter are unchanged.\", \"universe\": [\"NIFTY\", \"BANKNIFTY\", \"RELIANCE\", \"ICICIBANK\", \"HDFCBANK\", \"SBIN\"], \"session\": {\"start\": \"09:30\", \"no_new_after\": \"13:30\", \"force_exit\": \"15:10\"}, \"selection\": {\"expiry\": \"skip_expiry_day\", \"delta_band\": [0.4, 0.62], \"max_spread_pct\": 0.7, \"min_oi\": 150000, \"max_premium_per_lot\": 22000}, \"entry_long_call\": {\"all\": [{\"feature\": \"orb_body_break\", \"op\": \">\", \"value\": 0.5}, {\"feature\": \"minutes_into_session\", \"op\": \">=\", \"value\": 15}, {\"feature\": \"orb_range_pct\", \"op\": \">\", \"value\": 0.08}, {\"feature\": \"rel_volume\", \"op\": \">\", \"value\": 1.2}, {\"feature\": \"atr_pct\", \"op\": \">\", \"value\": 0.03}, {\"feature\": \"ema9_side\", \"op\": \">\", \"value\": 0.0}, {\"feature\": \"rv_iv_ratio\", \"op\": \">\", \"value\": 0.7}, {\"feature\": \"atm_total_friction_pct\", \"op\": \"<\", \"value\": 1.45}, {\"feature\": \"liquid_contracts\", \"op\": \">=\", \"value\": 4}, {\"feature\": \"minutes_to_close\", \"op\": \">\", \"value\": 75}], \"none\": [{\"feature\": \"atm_one_tick_pct\", \"op\": \">\", \"value\": 0.12}, {\"feature\": \"sessions_left\", \"op\": \"<\", \"value\": 3.0}]}, \"entry_long_put\": {\"all\": [{\"feature\": \"orb_body_break\", \"op\": \"<\", \"value\": -0.5}, {\"feature\": \"minutes_into_session\", \"op\": \">=\", \"value\": 15}, {\"feature\": \"orb_range_pct\", \"op\": \">\", \"value\": 0.08}, {\"feature\": \"rel_volume\", \"op\": \">\", \"value\": 1.2}, {\"feature\": \"atr_pct\", \"op\": \">\", \"value\": 0.03}, {\"feature\": \"ema9_side\", \"op\": \"<\", \"value\": 0.0}, {\"feature\": \"rv_iv_ratio\", \"op\": \">\", \"value\": 0.7}, {\"feature\": \"atm_total_friction_pct\", \"op\": \"<\", \"value\": 1.45}, {\"feature\": \"liquid_contracts\", \"op\": \">=\", \"value\": 4}, {\"feature\": \"minutes_to_close\", \"op\": \">\", \"value\": 75}], \"none\": [{\"feature\": \"atm_one_tick_pct\", \"op\": \">\", \"value\": 0.12}, {\"feature\": \"sessions_left\", \"op\": \"<\", \"value\": 3.0}]}, \"exit\": {\"target_pct\": 30.0, \"stop_pct\": 15.0, \"trail_after_pct\": 20.0, \"trail_giveback_pct\": 45.0, \"time_stop_min\": 60, \"iv_crush_exit_pct\": 8.0, \"underlying_invalidation\": {\"feature\": \"ema9_side\", \"flip\": true}}, \"sizing\": {\"risk_per_trade_pct\": 1.5, \"max_lots\": 2, \"max_premium_pct\": 22.0}, \"risk\": {\"daily_loss_pct\": 3.0, \"max_trades_day\": 2, \"max_concurrent\": 1, \"cooldown_min_after_loss\": 20}}}"
+  },
+  {
    "id": 1,
    "ts": "2026-07-27T16:27:07+05:30",
    "trigger": "idle",
@@ -220,6 +231,42 @@
   }
  ],
  "journal": [
+  {
+   "id": 47,
+   "ts": "2026-07-27T18:21:46+05:30",
+   "kind": "STRATEGY",
+   "symbol": "",
+   "headline": "Rejected proposal 'ORB_BodyBreak_v3_Loosened'",
+   "detail": "only 0 backtest trades (need 20); does not beat the incumbent's expectancy; expectancy is not positive",
+   "payload": "{\"backtest\": {\"trades\": 0, \"note\": \"no trades generated\", \"mode\": \"replay\", \"bars\": 0, \"confidence\": \"low\", \"symbols\": [\"NIFTY\", \"BANKNIFTY\", \"RELIANCE\", \"ICICIBANK\"]}}"
+  },
+  {
+   "id": 46,
+   "ts": "2026-07-27T18:21:46+05:30",
+   "kind": "REVIEW",
+   "symbol": "",
+   "headline": "v1 review: TWEAK",
+   "detail": "The strategy has now gone through at least two review cycles with zero trades executed \u2014 the entry filter conjunction is so restrictive that it never fires on a 4-instrument universe. There is no P&L, MFE/MAE, exit-reason mix, theta-vs-move analysis, or charge analysis to evaluate because there is literally no data. The past review already diagnosed this and proposed loosening, but the change was rejected on the grounds of insufficient backtest trades \u2014 a circular trap: the live strategy cannot generate trades to justify looser filters, and the looser filters cannot be approved without trades. The only way to break the deadlock is to accept that a zero-trade strategy is strictly worse than a strategy that fires occasionally and can be corrected empirically. The universe of 4 instruments compounds the problem: even on a high-volatility day, the probability that all conjunction conditions align on exactly these 4 names is very low.\n\nDIAGNOSIS: The filter conjunction (7+ simultaneous conditions including rel_volume > 1.5, orb_range_pct > 0.12, rv_iv_ratio > 0.8, ema9_side confirmation, atr_pct > 0.03, liquid_contracts >= 6, minutes_to_close > 90) applied to only 4 instruments produces near-zero firing frequency \u2014 the strategy is structurally unable to generate trades, making all other parameters irrelevant.",
+   "payload": "{}"
+  },
+  {
+   "id": 45,
+   "ts": "2026-07-27T18:21:46+05:30",
+   "kind": "IDLE",
+   "symbol": "",
+   "headline": "Market closed",
+   "detail": "Mon 27 Jul 18:21 IST",
+   "payload": "{}"
+  },
+  {
+   "id": 44,
+   "ts": "2026-07-27T18:21:46+05:30",
+   "kind": "DATA",
+   "symbol": "",
+   "headline": "Lot sizes from nse_csv",
+   "detail": "211 symbols cached",
+   "payload": "{}"
+  },
   {
    "id": 43,
    "ts": "2026-07-27T16:27:07+05:30",
