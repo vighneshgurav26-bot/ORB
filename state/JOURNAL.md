@@ -17,6 +17,11 @@ Opening Range Breakout, implemented from the user's document. Marks the 09:15-09
 
 ## Reviews
 
+### 2026-07-27T19:26:22+05:30 — idle (v1 -> v1)
+Three review cycles, zero trades — the strategy has never fired once. There is no P&L, MFE/MAE, exit-reason mix, theta analysis, or charge analysis to evaluate because the execution count is literally zero. The conjunction of 10+ entry conditions on a 4-instrument universe is the proximate cause: each filter alone is reasonable, but their product probability across only NIFTY, BANKNIFTY, RELIANCE, and ICICIBANK on any single session is near zero. Past reviews have correctly diagnosed this and proposed loosening, but the automated approval gate rejected both proposals for lacking 20 backtest trades — a circular deadlock where the live strategy cannot generate trades to justify looser filters. A strategy that never fires is not conservative; it is broken, and it is strictly worse than any strategy that fires occasionally and can be corrected empirically.
+
+*Changes:* proposal rejected: only 0 backtest trades (need 20); does not beat the incumbent's expectancy; expectancy is not positive
+
 ### 2026-07-27T18:21:46+05:30 — idle (v1 -> v1)
 The strategy has now gone through at least two review cycles with zero trades executed — the entry filter conjunction is so restrictive that it never fires on a 4-instrument universe. There is no P&L, MFE/MAE, exit-reason mix, theta-vs-move analysis, or charge analysis to evaluate because there is literally no data. The past review already diagnosed this and proposed loosening, but the change was rejected on the grounds of insufficient backtest trades — a circular trap: the live strategy cannot generate trades to justify looser filters, and the looser filters cannot be approved without trades. The only way to break the deadlock is to accept that a zero-trade strategy is strictly worse than a strategy that fires occasionally and can be corrected empirically. The universe of 4 instruments compounds the problem: even on a high-volatility day, the probability that all conjunction conditions align on exactly these 4 names is very low.
 

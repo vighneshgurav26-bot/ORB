@@ -208,6 +208,17 @@
  ],
  "reviews": [
   {
+   "id": 3,
+   "ts": "2026-07-27T19:26:22+05:30",
+   "trigger": "idle",
+   "from_version": 1,
+   "to_version": 1,
+   "stats": "{\"trades\": 0, \"note\": \"no trades generated\"}",
+   "lessons": "Three review cycles, zero trades \u2014 the strategy has never fired once. There is no P&L, MFE/MAE, exit-reason mix, theta analysis, or charge analysis to evaluate because the execution count is literally zero. The conjunction of 10+ entry conditions on a 4-instrument universe is the proximate cause: each filter alone is reasonable, but their product probability across only NIFTY, BANKNIFTY, RELIANCE, and ICICIBANK on any single session is near zero. Past reviews have correctly diagnosed this and proposed loosening, but the automated approval gate rejected both proposals for lacking 20 backtest trades \u2014 a circular deadlock where the live strategy cannot generate trades to justify looser filters. A strategy that never fires is not conservative; it is broken, and it is strictly worse than any strategy that fires occasionally and can be corrected empirically.",
+   "changes": "proposal rejected: only 0 backtest trades (need 20); does not beat the incumbent's expectancy; expectancy is not positive",
+   "raw": "{\"review\": {\"lessons\": \"Three review cycles, zero trades \\u2014 the strategy has never fired once. There is no P&L, MFE/MAE, exit-reason mix, theta analysis, or charge analysis to evaluate because the execution count is literally zero. The conjunction of 10+ entry conditions on a 4-instrument universe is the proximate cause: each filter alone is reasonable, but their product probability across only NIFTY, BANKNIFTY, RELIANCE, and ICICIBANK on any single session is near zero. Past reviews have correctly diagnosed this and proposed loosening, but the automated approval gate rejected both proposals for lacking 20 backtest trades \\u2014 a circular deadlock where the live strategy cannot generate trades to justify looser filters. A strategy that never fires is not conservative; it is broken, and it is strictly worse than any strategy that fires occasionally and can be corrected empirically.\", \"diagnosis\": \"The entry filter conjunction is too tight for a 4-instrument universe \\u2014 it has produced zero trades across multiple live sessions, making the strategy completely uninformative and uncorrectable.\", \"action\": \"TWEAK\", \"changes\": \"Make the minimum changes necessary to generate 1-3 trades per week so real data can accumulate. Specifically: (1) Relax orb_range_pct threshold from >0.12 to >0.08 \\u2014 a 0.12% ORB range is a high bar that screens out most normal sessions. (2) Relax rv_iv_ratio from >0.8 to >0.7 \\u2014 the 0.8 floor is discarding valid setups on moderate-IV days. (3) Relax rel_volume from >1.5 to >1.2 \\u2014 1.5x relative volume is the top quartile of days; 1.2x still confirms above-average activity. (4) Expand the universe from 4 to 7 names by adding HDFCBANK, INFY, and SBIN \\u2014 all are liquid, screener-eligible, and increase at-bats without degrading quality. (5) Reduce min_sessions_left from 3 to 2 \\u2014 the current 3-session floor combined with skip_expiry_day eliminates most of the weekly window. Keep all hard ceilings, risk_per_trade_pct at 1.5%, max_trades_day at 2, and the theta/friction gates exactly as-is. The goal is not to loosen risk controls but to give the signal logic enough at-bats to fire at all.\", \"confidence\": 0.82}, \"proposal\": {\"name\": \"ORB_BodyBreak_StockInPlay_v2\", \"rationale\": \"Opening Range Breakout on body-close confirmation, expanded universe and relaxed conjunction to generate 1-3 trades per week of real data. The primary edge is momentum continuation after a volume-confirmed ORB with realised vol exceeding implied: the tape is delivering more movement than options price in, so premium buying is structurally cheap. Theta and friction gates remain enforced via rv_iv_ratio and atm_total_friction_pct so cost structure is never ignored. Changes from v1: orb_range_pct lowered to >0.08, rv_iv_ratio lowered to >0.7, rel_volume lowered to >1.2, universe expanded to 7 names, sessions_left floor dropped to 2.\", \"universe\": [\"NIFTY\", \"BANKNIFTY\", \"RELIANCE\", \"ICICIBANK\", \"HDFCBANK\", \"INFY\", \"SBIN\"], \"session\": {\"start\": \"09:30\", \"no_new_after\": \"13:30\", \"force_exit\": \"15:10\"}, \"selection\": {\"expiry\": \"skip_expiry_day\", \"delta_band\": [0.4, 0.62], \"max_spread_pct\": 0.7, \"min_oi\": 150000, \"max_premium_per_lot\": 22000}, \"entry_long_call\": {\"all\": [{\"feature\": \"orb_body_break\", \"op\": \">\", \"value\": 0.5}, {\"feature\": \"minutes_into_session\", \"op\": \">=\", \"value\": 15}, {\"feature\": \"orb_range_pct\", \"op\": \">\", \"value\": 0.08}, {\"feature\": \"rel_volume\", \"op\": \">\", \"value\": 1.2}, {\"feature\": \"atr_pct\", \"op\": \">\", \"value\": 0.03}, {\"feature\": \"ema9_side\", \"op\": \">\", \"value\": 0.0}, {\"feature\": \"rv_iv_ratio\", \"op\": \">\", \"value\": 0.7}, {\"feature\": \"atm_total_friction_pct\", \"op\": \"<\", \"value\": 1.45}, {\"feature\": \"liquid_contracts\", \"op\": \">=\", \"value\": 6}, {\"feature\": \"minutes_to_close\", \"op\": \">\", \"value\": 90}], \"none\": [{\"feature\": \"atm_one_tick_pct\", \"op\": \">\", \"value\": 0.12}, {\"feature\": \"sessions_left\", \"op\": \"<\", \"value\": 2.0}]}, \"entry_long_put\": {\"all\": [{\"feature\": \"orb_body_break\", \"op\": \"<\", \"value\": -0.5}, {\"feature\": \"minutes_into_session\", \"op\": \">=\", \"value\": 15}, {\"feature\": \"orb_range_pct\", \"op\": \">\", \"value\": 0.08}, {\"feature\": \"rel_volume\", \"op\": \">\", \"value\": 1.2}, {\"feature\": \"atr_pct\", \"op\": \">\", \"value\": 0.03}, {\"feature\": \"ema9_side\", \"op\": \"<\", \"value\": 0.0}, {\"feature\": \"rv_iv_ratio\", \"op\": \">\", \"value\": 0.7}, {\"feature\": \"atm_total_friction_pct\", \"op\": \"<\", \"value\": 1.45}, {\"feature\": \"liquid_contracts\", \"op\": \">=\", \"value\": 6}, {\"feature\": \"minutes_to_close\", \"op\": \">\", \"value\": 90}], \"none\": [{\"feature\": \"atm_one_tick_pct\", \"op\": \">\", \"value\": 0.12}, {\"feature\": \"sessions_left\", \"op\": \"<\", \"value\": 2.0}]}, \"exit\": {\"target_pct\": 30.0, \"stop_pct\": 15.0, \"trail_after_pct\": 20.0, \"trail_giveback_pct\": 45.0, \"time_stop_min\": 60, \"iv_crush_exit_pct\": 8.0, \"underlying_invalidation\": {\"feature\": \"ema9_side\", \"flip\": true}}, \"sizing\": {\"risk_per_trade_pct\": 1.5, \"max_lots\": 2, \"max_premium_pct\": 22.0}, \"risk\": {\"daily_loss_pct\": 3.0, \"max_trades_day\": 2, \"max_concurrent\": 1, \"cooldown_min_after_loss\": 20}}}"
+  },
+  {
    "id": 2,
    "ts": "2026-07-27T18:21:46+05:30",
    "trigger": "idle",
@@ -231,6 +242,42 @@
   }
  ],
  "journal": [
+  {
+   "id": 51,
+   "ts": "2026-07-27T19:26:22+05:30",
+   "kind": "STRATEGY",
+   "symbol": "",
+   "headline": "Rejected proposal 'ORB_BodyBreak_StockInPlay_v2'",
+   "detail": "only 0 backtest trades (need 20); does not beat the incumbent's expectancy; expectancy is not positive",
+   "payload": "{\"backtest\": {\"trades\": 0, \"note\": \"no trades generated\", \"mode\": \"replay\", \"bars\": 0, \"confidence\": \"low\", \"symbols\": [\"NIFTY\", \"BANKNIFTY\", \"RELIANCE\", \"ICICIBANK\"]}}"
+  },
+  {
+   "id": 50,
+   "ts": "2026-07-27T19:26:22+05:30",
+   "kind": "REVIEW",
+   "symbol": "",
+   "headline": "v1 review: TWEAK",
+   "detail": "Three review cycles, zero trades \u2014 the strategy has never fired once. There is no P&L, MFE/MAE, exit-reason mix, theta analysis, or charge analysis to evaluate because the execution count is literally zero. The conjunction of 10+ entry conditions on a 4-instrument universe is the proximate cause: each filter alone is reasonable, but their product probability across only NIFTY, BANKNIFTY, RELIANCE, and ICICIBANK on any single session is near zero. Past reviews have correctly diagnosed this and proposed loosening, but the automated approval gate rejected both proposals for lacking 20 backtest trades \u2014 a circular deadlock where the live strategy cannot generate trades to justify looser filters. A strategy that never fires is not conservative; it is broken, and it is strictly worse than any strategy that fires occasionally and can be corrected empirically.\n\nDIAGNOSIS: The entry filter conjunction is too tight for a 4-instrument universe \u2014 it has produced zero trades across multiple live sessions, making the strategy completely uninformative and uncorrectable.",
+   "payload": "{}"
+  },
+  {
+   "id": 49,
+   "ts": "2026-07-27T19:26:22+05:30",
+   "kind": "IDLE",
+   "symbol": "",
+   "headline": "Market closed",
+   "detail": "Mon 27 Jul 19:26 IST",
+   "payload": "{}"
+  },
+  {
+   "id": 48,
+   "ts": "2026-07-27T19:26:22+05:30",
+   "kind": "DATA",
+   "symbol": "",
+   "headline": "Lot sizes from nse_csv",
+   "detail": "211 symbols cached",
+   "payload": "{}"
+  },
   {
    "id": 47,
    "ts": "2026-07-27T18:21:46+05:30",
