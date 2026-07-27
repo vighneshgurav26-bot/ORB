@@ -93,7 +93,7 @@ market:
   trading_days_per_year: 252
   calendar_days_per_year: 365
 data:
-  provider: auto
+  provider: kite
   underlying_candles: yahoo
   snapshot_interval_sec: 60
 brain:
