@@ -17,6 +17,11 @@ Opening Range Breakout, implemented from the user's document. Marks the 09:15-09
 
 ## Reviews
 
+### 2026-07-27T16:27:07+05:30 — idle (v1 -> v1)
+The strategy has zero trades, so there is no P&L, MFE/MAE, exit-reason mix, or charge analysis to evaluate — every diagnostic bucket is empty. With no executions the strategy is untestable in live conditions and learns nothing. The note in the payload makes the diagnosis explicit: entry rules are too tight. The combined filter stack (orb_range_pct > 0.12, rel_volume > 1.5, atr_pct > 0.03, rv_iv_ratio > 0.8, ema9_side confirmation, atm_one_tick_pct guard, liquid_contracts >= 6, minutes_to_close > 90, plus the screener's own liquidity×volatility gate) creates a conjunction of seven-plus conditions, each of which eliminates a fraction of candidates, and their product fires almost never on a 4-stock universe. The universe itself — NIFTY, BANKNIFTY, RELIANCE, ICICIBANK — is sensible for liquidity but too narrow to give enough at-bats for the filters to find a pass. Sample size is zero; any directional conclusion about edge is impossible, so the only valid response is to loosen enough to generate 1–3 trades per week and begin collecting real data.
+
+*Changes:* proposal rejected: only 0 backtest trades (need 20); does not beat the incumbent's expectancy; expectancy is not positive
+
 ## Closed trades
 
 | entry | symbol | contract | lots | in | out | why | gross | charges | net |

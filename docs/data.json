@@ -206,8 +206,56 @@
    "backtest": "{\"mode\": \"seed\"}"
   }
  ],
- "reviews": [],
+ "reviews": [
+  {
+   "id": 1,
+   "ts": "2026-07-27T16:27:07+05:30",
+   "trigger": "idle",
+   "from_version": 1,
+   "to_version": 1,
+   "stats": "{\"trades\": 0, \"note\": \"no trades generated\"}",
+   "lessons": "The strategy has zero trades, so there is no P&L, MFE/MAE, exit-reason mix, or charge analysis to evaluate \u2014 every diagnostic bucket is empty. With no executions the strategy is untestable in live conditions and learns nothing. The note in the payload makes the diagnosis explicit: entry rules are too tight. The combined filter stack (orb_range_pct > 0.12, rel_volume > 1.5, atr_pct > 0.03, rv_iv_ratio > 0.8, ema9_side confirmation, atm_one_tick_pct guard, liquid_contracts >= 6, minutes_to_close > 90, plus the screener's own liquidity\u00d7volatility gate) creates a conjunction of seven-plus conditions, each of which eliminates a fraction of candidates, and their product fires almost never on a 4-stock universe. The universe itself \u2014 NIFTY, BANKNIFTY, RELIANCE, ICICIBANK \u2014 is sensible for liquidity but too narrow to give enough at-bats for the filters to find a pass. Sample size is zero; any directional conclusion about edge is impossible, so the only valid response is to loosen enough to generate 1\u20133 trades per week and begin collecting real data.",
+   "changes": "proposal rejected: only 0 backtest trades (need 20); does not beat the incumbent's expectancy; expectancy is not positive",
+   "raw": "{\"review\": {\"lessons\": \"The strategy has zero trades, so there is no P&L, MFE/MAE, exit-reason mix, or charge analysis to evaluate \\u2014 every diagnostic bucket is empty. With no executions the strategy is untestable in live conditions and learns nothing. The note in the payload makes the diagnosis explicit: entry rules are too tight. The combined filter stack (orb_range_pct > 0.12, rel_volume > 1.5, atr_pct > 0.03, rv_iv_ratio > 0.8, ema9_side confirmation, atm_one_tick_pct guard, liquid_contracts >= 6, minutes_to_close > 90, plus the screener's own liquidity\\u00d7volatility gate) creates a conjunction of seven-plus conditions, each of which eliminates a fraction of candidates, and their product fires almost never on a 4-stock universe. The universe itself \\u2014 NIFTY, BANKNIFTY, RELIANCE, ICICIBANK \\u2014 is sensible for liquidity but too narrow to give enough at-bats for the filters to find a pass. Sample size is zero; any directional conclusion about edge is impossible, so the only valid response is to loosen enough to generate 1\\u20133 trades per week and begin collecting real data.\", \"diagnosis\": \"The conjunction of entry filters on a 4-symbol universe is so restrictive that the strategy never fires; zero trades means zero learning and zero capital put to work.\", \"action\": \"TWEAK\", \"changes\": \"1) Lower orb_range_pct threshold from 0.12 to 0.08 \\u2014 a 0.12% opening range is a high bar on quieter days; 0.08 still screens out genuinely flat opens. 2) Lower rel_volume from 1.5 to 1.2 \\u2014 the screener's own liquidity gate already enforces tape activity; doubling up at 1.5 is redundant and eliminates too many valid days. 3) Lower rv_iv_ratio from 0.8 to 0.7 \\u2014 0.8 cuts out borderline days that can still move enough intraday; 0.7 keeps the anti-crush intent while firing more often. 4) Widen the universe by adding HDFCBANK and INFY so the screener has 6 candidates to rank instead of 4, improving the chance that at least one passes all gates on any given day. 5) Reduce minutes_to_close entry cutoff from 90 to 75 \\u2014 this recovers a 15-minute window where valid late-morning breaks are currently blocked. 6) Keep all hard ceilings, the stop/target ratio, the max-2-trades cap, and the body-break mechanic unchanged \\u2014 do not touch what has not been tested. 7) Accept that the immediate goal is data collection, not optimisation: if after 10 trading sessions the strategy still produces fewer than 5 trades, revisit the filter stack again.\", \"confidence\": 0.62}, \"proposal\": {\"name\": \"ORB_BodyBreak_StockInPlay_v2\", \"rationale\": \"Opening Range Body-Breakout on high-relative-volume underlyings. Edge comes from early directional commitment on confirmed momentum: a closed 5m body beyond the 15-min OR on above-average volume signals institutional participation, not noise. Costs are controlled by gating on rv_iv_ratio (tape must deliver close to what IV charges), atm_total_friction_pct (spread+brokerage must be manageable), and a minimum orb_range_pct that ensures the OR was wide enough to matter. Version 2 loosens five thresholds that caused zero trades in v1 (orb_range_pct 0.12\\u21920.08, rel_volume 1.5\\u21921.2, rv_iv_ratio 0.8\\u21920.7, minutes_to_close 90\\u219275) and adds HDFCBANK and INFY to the universe to give the screener more candidates; all risk caps and the 1:2 stop/target structure are unchanged.\", \"universe\": [\"NIFTY\", \"BANKNIFTY\", \"HDFCBANK\", \"ICICIBANK\", \"RELIANCE\", \"INFY\"], \"session\": {\"start\": \"09:30\", \"no_new_after\": \"13:30\", \"force_exit\": \"15:10\"}, \"selection\": {\"expiry\": \"skip_expiry_day\", \"delta_band\": [0.4, 0.62], \"max_spread_pct\": 0.7, \"min_oi\": 150000, \"max_premium_per_lot\": 22000}, \"entry_long_call\": {\"all\": [{\"feature\": \"orb_body_break\", \"op\": \">\", \"value\": 0.5}, {\"feature\": \"minutes_into_session\", \"op\": \">=\", \"value\": 15}, {\"feature\": \"orb_range_pct\", \"op\": \">\", \"value\": 0.08}, {\"feature\": \"rel_volume\", \"op\": \">\", \"value\": 1.2}, {\"feature\": \"atr_pct\", \"op\": \">\", \"value\": 0.03}, {\"feature\": \"ema9_side\", \"op\": \">\", \"value\": 0.0}, {\"feature\": \"rv_iv_ratio\", \"op\": \">\", \"value\": 0.7}, {\"feature\": \"atm_total_friction_pct\", \"op\": \"<\", \"value\": 1.45}, {\"feature\": \"liquid_contracts\", \"op\": \">=\", \"value\": 6}, {\"feature\": \"minutes_to_close\", \"op\": \">\", \"value\": 75}], \"none\": [{\"feature\": \"atm_one_tick_pct\", \"op\": \">\", \"value\": 0.12}, {\"feature\": \"sessions_left\", \"op\": \"<\", \"value\": 3.0}]}, \"entry_long_put\": {\"all\": [{\"feature\": \"orb_body_break\", \"op\": \"<\", \"value\": -0.5}, {\"feature\": \"minutes_into_session\", \"op\": \">=\", \"value\": 15}, {\"feature\": \"orb_range_pct\", \"op\": \">\", \"value\": 0.08}, {\"feature\": \"rel_volume\", \"op\": \">\", \"value\": 1.2}, {\"feature\": \"atr_pct\", \"op\": \">\", \"value\": 0.03}, {\"feature\": \"ema9_side\", \"op\": \"<\", \"value\": 0.0}, {\"feature\": \"rv_iv_ratio\", \"op\": \">\", \"value\": 0.7}, {\"feature\": \"atm_total_friction_pct\", \"op\": \"<\", \"value\": 1.45}, {\"feature\": \"liquid_contracts\", \"op\": \">=\", \"value\": 6}, {\"feature\": \"minutes_to_close\", \"op\": \">\", \"value\": 75}], \"none\": [{\"feature\": \"atm_one_tick_pct\", \"op\": \">\", \"value\": 0.12}, {\"feature\": \"sessions_left\", \"op\": \"<\", \"value\": 3.0}]}, \"exit\": {\"target_pct\": 30.0, \"stop_pct\": 15.0, \"trail_after_pct\": 20.0, \"trail_giveback_pct\": 45.0, \"time_stop_min\": 60, \"iv_crush_exit_pct\": 8.0, \"underlying_invalidation\": {\"feature\": \"ema9_side\", \"flip\": true}}, \"sizing\": {\"risk_per_trade_pct\": 1.5, \"max_lots\": 2, \"max_premium_pct\": 22.0}, \"risk\": {\"daily_loss_pct\": 3.0, \"max_trades_day\": 2, \"max_concurrent\": 1, \"cooldown_min_after_loss\": 20}}}"
+  }
+ ],
  "journal": [
+  {
+   "id": 43,
+   "ts": "2026-07-27T16:27:07+05:30",
+   "kind": "STRATEGY",
+   "symbol": "",
+   "headline": "Rejected proposal 'ORB_BodyBreak_StockInPlay_v2'",
+   "detail": "only 0 backtest trades (need 20); does not beat the incumbent's expectancy; expectancy is not positive",
+   "payload": "{\"backtest\": {\"trades\": 0, \"note\": \"no trades generated\", \"mode\": \"replay\", \"bars\": 0, \"confidence\": \"low\", \"symbols\": [\"NIFTY\", \"BANKNIFTY\", \"HDFCBANK\", \"ICICIBANK\"]}}"
+  },
+  {
+   "id": 42,
+   "ts": "2026-07-27T16:27:07+05:30",
+   "kind": "REVIEW",
+   "symbol": "",
+   "headline": "v1 review: TWEAK",
+   "detail": "The strategy has zero trades, so there is no P&L, MFE/MAE, exit-reason mix, or charge analysis to evaluate \u2014 every diagnostic bucket is empty. With no executions the strategy is untestable in live conditions and learns nothing. The note in the payload makes the diagnosis explicit: entry rules are too tight. The combined filter stack (orb_range_pct > 0.12, rel_volume > 1.5, atr_pct > 0.03, rv_iv_ratio > 0.8, ema9_side confirmation, atm_one_tick_pct guard, liquid_contracts >= 6, minutes_to_close > 90, plus the screener's own liquidity\u00d7volatility gate) creates a conjunction of seven-plus conditions, each of which eliminates a fraction of candidates, and their product fires almost never on a 4-stock universe. The universe itself \u2014 NIFTY, BANKNIFTY, RELIANCE, ICICIBANK \u2014 is sensible for liquidity but too narrow to give enough at-bats for the filters to find a pass. Sample size is zero; any directional conclusion about edge is impossible, so the only valid response is to loosen enough to generate 1\u20133 trades per week and begin collecting real data.\n\nDIAGNOSIS: The conjunction of entry filters on a 4-symbol universe is so restrictive that the strategy never fires; zero trades means zero learning and zero capital put to work.",
+   "payload": "{}"
+  },
+  {
+   "id": 41,
+   "ts": "2026-07-27T16:27:07+05:30",
+   "kind": "IDLE",
+   "symbol": "",
+   "headline": "Market closed",
+   "detail": "Mon 27 Jul 16:27 IST",
+   "payload": "{}"
+  },
+  {
+   "id": 40,
+   "ts": "2026-07-27T16:27:07+05:30",
+   "kind": "DATA",
+   "symbol": "",
+   "headline": "Lot sizes from nse_csv",
+   "detail": "211 symbols cached",
+   "payload": "{}"
+  },
   {
    "id": 39,
    "ts": "2026-07-27T13:12:03+05:30",
