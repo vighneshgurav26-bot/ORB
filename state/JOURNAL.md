@@ -17,6 +17,11 @@ Opening Range Breakout, implemented from the user's document. Marks the 09:15-09
 
 ## Reviews
 
+### 2026-07-28T09:39:36+05:30 — idle (v1 -> v1)
+Four review cycles, zero trades — the strategy has never executed once. The approval gate rejects every proposed loosening because it demands 20 backtest trades, but the live strategy cannot generate those trades because its filters are too tight: a classic circular deadlock. The conjunction of 10+ entry conditions on a 4-instrument universe produces a near-zero firing probability on any given session, and the single blocked-scan entry confirms the screener itself found nothing to pass up. There is no P&L, MFE/MAE, exit-reason mix, theta analysis, or charge analysis to evaluate — every diagnostic bucket is empty. A strategy that has never fired in four live sessions is not conservative; it is non-functional, and it is strictly inferior to any strategy that fires occasionally and can be corrected empirically. The note appended to the payload by the system itself states this plainly: 'If the desk has not traded, the entry rules are too tight.'
+
+*Changes:* proposal rejected: only 0 backtest trades (need 20); does not beat the incumbent's expectancy; expectancy is not positive
+
 ### 2026-07-27T19:26:22+05:30 — idle (v1 -> v1)
 Three review cycles, zero trades — the strategy has never fired once. There is no P&L, MFE/MAE, exit-reason mix, theta analysis, or charge analysis to evaluate because the execution count is literally zero. The conjunction of 10+ entry conditions on a 4-instrument universe is the proximate cause: each filter alone is reasonable, but their product probability across only NIFTY, BANKNIFTY, RELIANCE, and ICICIBANK on any single session is near zero. Past reviews have correctly diagnosed this and proposed loosening, but the automated approval gate rejected both proposals for lacking 20 backtest trades — a circular deadlock where the live strategy cannot generate trades to justify looser filters. A strategy that never fires is not conservative; it is broken, and it is strictly worse than any strategy that fires occasionally and can be corrected empirically.
 
