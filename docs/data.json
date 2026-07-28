@@ -297,6 +297,24 @@
  ],
  "journal": [
   {
+   "id": 78,
+   "ts": "2026-07-28T17:20:48+05:30",
+   "kind": "IDLE",
+   "symbol": "",
+   "headline": "Market closed",
+   "detail": "Tue 28 Jul 17:20 IST",
+   "payload": "{}"
+  },
+  {
+   "id": 77,
+   "ts": "2026-07-28T17:20:48+05:30",
+   "kind": "DATA",
+   "symbol": "",
+   "headline": "Lot sizes from kite",
+   "detail": "215 symbols cached",
+   "payload": "{}"
+  },
+  {
    "id": 76,
    "ts": "2026-07-28T17:03:34+05:30",
    "kind": "IDLE",
