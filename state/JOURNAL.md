@@ -1,8 +1,8 @@
 # Options Desk — Trading Journal
 
-**Strategy v1 — ORB_BodyBreak_StockInPlay**
+**Strategy v2 — ORB_v3_WideOpen_HardRiskOnly**
 
-Opening Range Breakout, implemented from the user's document. Marks the 09:15-09:30 15-minute range, waits for a 5-minute candle BODY (not a wick) to close beyond it, buys near-ATM CE on an up-break or PE on a down-break, targets 1:2, caps at 2 trades per day, and trails on the 5m 9-EMA. The doc's 'Stock in Play' relative-volume filter (rel_volume > 1.5) is the primary edge. The desk's liquidity and theta gates ride on top: the doc's own Section 4 demands price/volume/ATR screening and its Key Terms name theta decay as the risk quick exits exist to dodge, so a low realised-vs-implied day is still skipped rather than bought.
+v3: only the ORB body-break plus a minimal cost/liquidity floor are mandatory. Every confirmation (rel_volume 1.2->0.9, ema side, atr 0.030->0.020, range width, distance, rv/iv) is now any-one-of. Expiry floor eased 3->2 sessions, time-to-close 75->45min, max 3 trades/day. Stops, 1:2 RR, 9-EMA trail, 1.5% risk and the daily halt are UNCHANGED.
 
 ## Performance
 
@@ -13,7 +13,8 @@ Opening Range Breakout, implemented from the user's document. Marks the 09:15-09
 
 | v | name | status | created |
 |---|---|---|---|
-| 1 | ORB_BodyBreak_StockInPlay | ACTIVE | 2026-07-25T05:19:24+05:30 |
+| 2 | ORB_v3_WideOpen_HardRiskOnly | ACTIVE | 2026-07-28T10:22:26+05:30 |
+| 1 | ORB_BodyBreak_StockInPlay | RETIRED | 2026-07-25T05:19:24+05:30 |
 
 ## Reviews
 
