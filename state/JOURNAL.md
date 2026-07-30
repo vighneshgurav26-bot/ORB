@@ -1,6 +1,6 @@
 # Options Desk — Trading Journal
 
-**Strategy v2 — ORB_v3_WideOpen_HardRiskOnly**
+**Strategy v4 — ORB_v3_WideOpen_HardRiskOnly**
 
 v3: only the ORB body-break plus a minimal cost/liquidity floor are mandatory. Every confirmation (rel_volume 1.2->0.9, ema side, atr 0.030->0.020, range width, distance, rv/iv) is now any-one-of. Expiry floor eased 3->2 sessions, time-to-close 75->45min, max 3 trades/day. Stops, 1:2 RR, 9-EMA trail, 1.5% risk and the daily halt are UNCHANGED.
 
@@ -13,7 +13,9 @@ v3: only the ORB body-break plus a minimal cost/liquidity floor are mandatory. E
 
 | v | name | status | created |
 |---|---|---|---|
-| 2 | ORB_v3_WideOpen_HardRiskOnly | ACTIVE | 2026-07-28T10:22:26+05:30 |
+| 4 | ORB_v3_WideOpen_HardRiskOnly | ACTIVE | 2026-07-30T09:16:39+05:30 |
+| 3 | ORB_v3_WideOpen_HardRiskOnly | RETIRED | 2026-07-29T07:44:25+05:30 |
+| 2 | ORB_v3_WideOpen_HardRiskOnly | RETIRED | 2026-07-28T10:22:26+05:30 |
 | 1 | ORB_BodyBreak_StockInPlay | RETIRED | 2026-07-25T05:19:24+05:30 |
 
 ## Reviews
